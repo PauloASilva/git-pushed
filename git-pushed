@@ -1,0 +1,71 @@
+#! /bin/bash
+##
+# NAME
+#       git-pushed
+#
+# SYNOPSIS
+#       git-pushed <url>
+#
+# DESCRIPTION
+#       Lists last modified Git repo heads (revision hash and head name).
+#       When git-pushed runs for the first time for a given <url>, it will
+#       report all Git heads as modified
+#
+# EXAMPLES
+#       git-pushed git@gitlab.somehost.com:project.git
+#       045308caebef7dc6996954fe634aa2a310b8eaf5    refs/heads/development
+#
+# AUTHOR
+#       Written by Paulo Silva <me[at]pauloasilva.com>
+#
+# COPYRIGHT
+#       Copyright (c) 2015 Paulo Silva
+#
+# LICENSE
+#       This program is free software; you can redistribute it and/or
+#       modify it under the terms of the GNU General Public License
+#       as published by the Free Software Foundation; version 2
+#       of the License.
+#
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#       GNU General Public License for more details.
+#
+#       You should have received a copy of the GNU General Public License
+#       along with this program; if not, write to the Free Software
+#       Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+#       MA  02110-1301, USA.
+
+readonly CACHE_DIR="$HOME/.cache/git-pushed"
+
+if [ -z "$1" ]; then
+    echo "Missing repository URL"
+    echo "Usage: $(basename $0) <url>"
+    exit 1
+fi
+
+readonly host="$1"
+readonly host_hash=$(sha1sum <<<"$host" | cut -f 1 -d ' ')
+readonly cache_file="$CACHE_DIR/$host_hash"
+
+query=$(git ls-remote "$host" )
+
+if [ $? -ne 0 ]; then
+    exit 2
+fi
+
+if ! [ -d "$CACHE_DIR" ]; then
+    mkdir -p "$CACHE_DIR"
+fi
+
+if ! [ -f "$cache_file" ]; then
+    echo "" > "$cache_file"
+fi
+
+cache=$(cat "$cache_file")
+diff --suppress-common-lines <(echo "$cache") <(echo "$query") | grep ">" | sed 's/^> //'
+
+echo "$query" 1> "$cache_file"
+
+exit 0
