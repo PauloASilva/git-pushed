@@ -34,3 +34,20 @@ ssh user@remote-machine<<<EOF
     # ...
 EOF
 ```
+
+## Instalation
+
+* Git checkout
+```
+$ cd /tmp
+$ git checkout https://github.com/PauloASilva/git-pushed.git git-pushed
+```
+* make `git-pushed` executable
+```
+$ cd git-pushed
+$ chmod a+x git-pushed
+```
+* copy `git-pushed` to a system location (requires `sudo`)
+```
+$ sudo cp git-pushed /usr/local/bin
+```
